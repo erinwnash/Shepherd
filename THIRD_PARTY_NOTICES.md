@@ -13,3 +13,5 @@ Reference-only reading (no code taken) is not listed here.
 | gopkg.in/check.v1 | v0.0.0-20161208181325 | https://github.com/go-check/check | BSD-2-Clause (LICENSE text verified 2026-10-16) | test-only dependency of yaml/v3; not compiled into Shepherd | 2026-10-16 |
 | tools/llamagputop | 2026 | https://github.com/XscannedX/llamagputop | MIT (LICENSE verified 2026-10-17) | Terminal GPU and inference monitor for TUI dashboard | 2026-10-17 |
 | rsc.io/qr | v0.2.0 | https://github.com/rsc/qr | BSD-3-Clause (LICENSE verified 2026-10-23) | QR encoding for the dashboard's ntfy subscribe code | 2026-10-23 |
+
+Shepherd itself is licensed under Apache-2.0 (`LICENSE`, text from https://www.apache.org/licenses/LICENSE-2.0.txt).

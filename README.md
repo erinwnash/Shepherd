@@ -249,4 +249,4 @@ its own LICENSE.
 
 ## License
 
-No license file is included yet. Until the owner adds one, all rights are reserved.
+Apache License 2.0. See `LICENSE`. `tools/llamagputop` is MIT-licensed under its own `LICENSE`.
