@@ -1,0 +1,12 @@
+[Unit]
+Description=Shepherd AI Daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/shepherd start -f
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=default.target

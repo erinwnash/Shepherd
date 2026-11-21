@@ -1,0 +1,28 @@
+# Shepherd ntfy remote commands (ACTIVE).
+#
+# Shepherd watches the same ntfy topic it notifies on (or `url` below) and treats a message
+# whose FIRST WORD is a keyword as a command. Matching is case-insensitive. Shepherd ignores its
+# own outbound notifications, messages sent before the daemon started, and anything over 256 bytes.
+# Every recognised keyword is written to the event log (`shepherd audit`) with actor "ntfy".
+#
+# SECURITY: on public ntfy.sh the topic name is the only password. Use a long random topic, or
+# a protected topic with an access token (token_env), before enabling anything beyond obliviate.
+# `unlock`, `approve` and config/quota changes can never be issued remotely.
+#
+# See examples/ntfy/ntfy-commands.demo.toml for the full set of standard commands.
+
+schema_version = 1
+enabled = true
+
+# url = "https://ntfy.sh/your-command-topic"   # default: the [notify] ntfy topic in shepherd.toml
+# token_env = "NTFY_TOKEN"                     # env var with an ntfy access token (default: [notify] ntfy_token_env)
+# rate_limit_per_min = 10                      # non-emergency commands per minute; obliviate is never limited
+# allow_escalating = false                     # allow start/resume/retry/release/drain-off remotely
+
+# Full stop. Kills the running chunk, rolls back its worktree, requeues it, and puts the controller
+# in lockdown: nothing runs again until `shepherd unlock` is run on the machine itself.
+# This keyword is built in and cannot be remapped; it is listed here for visibility.
+[[command]]
+keyword = "obliviate"
+action = "lockdown"
+description = "FULL STOP: halt everything and lock down until a local `shepherd unlock`"

@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shepherd — Complete User Guide & Reference</title>
+  <style>
+    :root {
+      --bg: #0f141c;
+      --card-bg: #161d27;
+      --card-border: #263345;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --code-bg: #090d14;
+      --code-border: #1e293b;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.65;
+      padding: 0;
+      margin: 0;
+      display: flex;
+    }
+
+    /* Sidebar Navigation */
+    #sidebar {
+      width: 290px;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      background: var(--card-bg);
+      border-right: 1px solid var(--card-border);
+      padding: 2rem 1.25rem;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    #sidebar h2 {
+      font-size: 1.15rem;
+      color: #fff;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #sidebar .version-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      margin-bottom: 1.25rem;
+    }
+
+    #sidebar ul {
+      list-style: none;
+    }
+
+    #sidebar li {
+      margin-bottom: 0.4rem;
+    }
+
+    #sidebar a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      display: block;
+      padding: 0.35rem 0.6rem;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+
+    #sidebar a:hover {
+      color: #fff;
+      background: var(--code-border);
+    }
+
+    #sidebar .section-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin: 1.2rem 0 0.4rem 0.6rem;
+    }
+
+    /* Content Area */
+    #content {
+      flex: 1;
+      padding: 3rem 4rem;
+      max-width: 1060px;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      color: #fff;
+      margin-bottom: 0.75rem;
+      line-height: 1.2;
+    }
+
+    h2 {
+      font-size: 1.55rem;
+      color: #fff;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    h3 {
+      font-size: 1.18rem;
+      color: var(--accent);
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p { margin-bottom: 1.15rem; }
+
+    /* Code blocks and inline code */
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: var(--code-bg);
+      border: 1px solid var(--code-border);
+      padding: 0.18rem 0.4rem;
+      border-radius: 4px;
+      color: #f1f5f9;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--code-border);
+      padding: 1.1rem 1.3rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+    }
+
+    pre code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: #f8fafc;
+      font-size: 0.88rem;
+      display: block;
+      line-height: 1.6;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0 2rem 0;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--card-border);
+    }
+
+    th {
+      background: var(--card-bg);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Callout Boxes */
+    .callout {
+      background: var(--card-bg);
+      border-left: 4px solid var(--accent);
+      padding: 1rem 1.25rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1.5rem;
+      font-size: 0.94rem;
+    }
+
+    .callout-title {
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.35rem;
+    }
+
+    .callout.success { border-color: var(--success); }
+    .callout.warning { border-color: var(--warning); }
+    .callout.danger { border-color: var(--danger); }
+
+    /* Command Grid / Cards */
+    .cmd-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .cmd-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .cmd-title {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 1.05rem;
+    }
+
+    .cmd-badge {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+    }
+
+    .footer {
+      margin-top: 5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Sidebar -->
+  <nav id="sidebar">
+    <h2>Shepherd</h2>
+    <div class="version-badge">v0.6.0 Stable</div>
+
+    <ul>
+      <li><a href="#overview">Overview & Architecture</a></li>
+      <li><a href="#onboarding">Project Onboarding & Wizard</a></li>
+      <li><a href="#quickstart">Quickstart: Launch & Test</a></li>
+      <li><a href="#test-suite">Running the Test Suite</a></li>
+
+      <div class="section-title">CLI Reference</div>
+      <li><a href="#cli-lifecycle">Lifecycle Controls</a></li>
+      <li><a href="#cli-queue">Queue & Plan Steering</a></li>
+      <li><a href="#cli-config">Config & Overrides</a></li>
+      <li><a href="#cli-quota">Quota & Pools</a></li>
+      <li><a href="#cli-workers">LAN Workers & mTLS</a></li>
+      <li><a href="#cli-service">Background Service</a></li>
+      <li><a href="#cli-retro">Sprint Retrospectives</a></li>
+      <li><a href="#cli-diagnostics">TUI & Diagnostics</a></li>
+
+      <div class="section-title">Specifications</div>
+      <li><a href="#workorders">Work Order Spec</a></li>
+      <li><a href="#adapters">Agent CLI Adapters</a></li>
+      <li><a href="#sandboxing">Security & Sandboxing</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="content">
+
+    <section id="overview">
+      <h1>Shepherd User Guide</h1>
+      <p>
+        <strong>Shepherd</strong> is a resilient, self-healing orchestrator for batch coding agents (Claude Code, Antigravity, OpenAI Codex, Aider, and Gemini CLI).
+        It manages queues of atomic work orders, executes verification gates in sandboxed OS containers, performs automated repair loops, meters quota across LLM pools, and distributes compute across local and LAN workers over mTLS.
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Core Design Principles</div>
+        Pure Go implementation (no cgo), Linux Tier 1 (Arch/Omarchy target), macOS Tier 1, Windows Tier 2. Single-writer daemon with SQLite WAL persistence, append-only SHA-256 hash-chained audit log, Bubblewrap process isolation, and Unix domain socket control plane with <code>SO_PEERCRED</code> verification.
+      </div>
+    </section>
+
+    <!-- Onboarding Wizard Section -->
+    <section id="onboarding">
+      <h2>Project Onboarding Wizard &amp; <code>launch.md</code> Orchestration</h2>
+      <p>
+        Shepherd provides a built-in per-project onboarding wizard (<code>shepherd onboard</code> / <code>shepherd wizard</code>) that scaffolds all orchestration configuration and generates <code>launch.md</code>—a comprehensive mission directive that guides any supported agent CLI (Antigravity <code>agy</code>, Claude Code <code>claude</code>, OpenAI <code>codex</code>, <code>opencode</code>/local Ollama, <code>aider</code>, <code>gemini</code>, Hermes Agent <code>hermes</code>, or Pi <code>pi</code>) to inspect the project, establish Architecture Decision Records (ADRs), and decompose goals into verifiable chunk work orders.
+      </p>
+
+      <div class="cmd-card">
+        <div class="cmd-title">Interactive Onboarding Wizard</div>
+        <div class="cmd-desc">Walks through project detection, language conventions, target CLI selection, and auto-launch options.</div>
+        <pre><code># Launch the interactive wizard
+shepherd wizard
+
+# Or explicitly pass the target project directory
+shepherd onboard --dir /path/to/my-project --interactive</code></pre>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-title">Automated Scaffolding &amp; CLI Launch</div>
+        <div class="cmd-desc">Generate orchestration files and immediately launch the target agent CLI in one step.</div>
+        <pre><code># Auto-detect stack, write launch.md, and immediately launch Antigravity (agy)
+shepherd onboard --cli agy --goal "Build Redis-backed event notification service" --launch
+
+# Or preview generated files and the exact CLI launch command without writing to disk
+shepherd onboard --dry-run</code></pre>
+      </div>
+
+      <h3>Scaffolded Orchestration Structure</h3>
+      <p>When run, the wizard generates a production-ready orchestration layout inside the project directory:</p>
+      <ul>
+        <li><code>shepherd.toml</code>: Preconfigured with detected build/test gates, slot limits bounded by hardware safeguards, and repair chains.</li>
+        <li><code>launch.md</code>: The autonomous onboarding prompt instructing the LLM agent CLI how to structure ADRs and work orders.</li>
+        <li><code>docs/adr/0001-record-architecture-decisions.md</code>: Standard ADR template for recording foundational technical choices.</li>
+        <li><code>docs/plan/epic.md</code>: High-level architectural roadmap and milestone definition.</li>
+        <li><code>docs/plan/S01/sprint.md</code>: Sprint 1 scope, chunk inventory, and acceptance criteria.</li>
+        <li><code>.shepherd/prompts/coder.md</code> &amp; <code>repair.md</code>: Terse unattended coding and test repair guidelines.</li>
+      </ul>
+
+      <h3>Hardware Safeguards &amp; Concurrency Control</h3>
+      <p>
+        To prevent local agents and compilers from freezing host machines or exhausting resources during onboarding and execution, Shepherd enforces strict hardware constraints:
+      </p>
+      <ul>
+        <li><strong>GPU Worker Pinning:</strong> Multiworker routing limits local model agents to the number of detected physical GPUs (e.g. 1 video card = maximum 1 local worker slot), with <code>CUDA_VISIBLE_DEVICES</code> pinning.</li>
+        <li><strong>RAM Safety Floor:</strong> Verifies that host available RAM remains above a safety reserve floor (default 4.0 GB) before provisioning additional slots.</li>
+        <li><strong>Gate Execution Mutex:</strong> Serializes compiler and test suite invocations across worker slots so only one heavy test suite executes simultaneously, eliminating CPU cache thrashing.</li>
+      </ul>
+
+      <h3>Self-Verification via <code>shepherd plan lint</code></h3>
+      <p>
+        The generated <code>launch.md</code> instructs the coding agent CLI to finalize its onboarding pass by running <code>shepherd plan lint</code>. The linter validates:
+      </p>
+      <ul>
+        <li>Strict YAML frontmatter compliance (ID, Title, Epic, Sprint, DependsOn, Files, Tests/NoTestsReason).</li>
+        <li>Mandatory <code>new:</code> prefix on any file created anew by a chunk.</li>
+        <li>Cycle-free Directed Acyclic Graph (DAG) dependencies.</li>
+        <li>Presence of mandatory Markdown sections: <code>## Goal</code>, <code>## Out of scope</code>, and <code>## Acceptance</code>.</li>
+      </ul>
+    </section>
+
+    <!-- Quickstart Section -->
+    <section id="quickstart">
+      <h2>Quickstart: Launching and Testing</h2>
+      <p>Follow these steps to build, initialize, test, and run Shepherd on your machine.</p>
+
+      <h3>Step 1: Build the Binary</h3>
+      <p>Compile Shepherd directly using the standard Go toolchain (pure Go, CGO-free):</p>
+      <pre><code># Build executable into build/shepherd
+go build -o build/shepherd ./cmd/shepherd
+
+# Verify compilation and binary SHA-256 digest
+./build/shepherd version</code></pre>
+
+      <h3>Step 2: Run Preflight Diagnostics (Doctor)</h3>
+      <p>Verify that your system has all required tools (Git, Bubblewrap, LLM CLIs):</p>
+      <pre><code>./build/shepherd doctor</code></pre>
+      <p>Output shows which agent runners (<code>claude</code>, <code>agy</code>, <code>codex</code>, <code>aider</code>, <code>gemini</code>) and sandbox tools are present on your <code>PATH</code>.</p>
+
+      <h3>Step 3: Initialize a Project</h3>
+      <p>Autodetect build and test runners, scan for available agent CLIs, and scaffold <code>shepherd.toml</code>:</p>
+      <pre><code>./build/shepherd init</code></pre>
+      <p>This generates the configuration file and creates the work order queue directory at <code>docs/plan/</code>.</p>
+
+      <h3>Step 4: Lint Your Work Orders</h3>
+      <p>Before executing anything, validate that all work orders in <code>docs/plan/</code> have valid YAML frontmatter, declare test scopes, have no dependency cycles, and do not exceed file boundaries:</p>
+      <pre><code>./build/shepherd plan lint</code></pre>
+
+      <h3>Step 5: Launch the Controller Daemon</h3>
+      <p>You can run Shepherd in the foreground (for testing/development) or in the background:</p>
+      <pre><code># Foreground execution with real-time logs
+./build/shepherd start -f
+
+# Or launch daemon in background
+./build/shepherd start</code></pre>
+
+      <h3>Step 6: Observe via the Interactive Terminal Dashboard (TUI)</h3>
+      <p>Open a second terminal window to monitor active worker execution, quota gauges, and audit events:</p>
+      <pre><code># Live interactive dashboard
+./build/shepherd dashboard
+
+# Or single-shot headless snapshot (great for scripts or CI)
+./build/shepherd dashboard --once</code></pre>
+    </section>
+
+    <!-- Test Suite Section -->
+    <section id="test-suite">
+      <h2>Running the Test Suite</h2>
+      <p>Shepherd is developed test-first, with extensive unit, abuse-case, and end-to-end integration tests.</p>
+
+      <pre><code># Run all 27 package test suites with cached passes cleared
+go test -count=1 ./...
+
+# Run static analysis and lint checks
+go vet ./...
+
+# Run tests for a specific subsystem with verbose output
+go test -v ./internal/controller/...
+go test -v ./internal/sandbox/...
+go test -v ./internal/lan/...
+go test -v ./internal/tui/...
+go test -v ./cmd/shepherd/...</code></pre>
+    </section>
+
+    <!-- CLI Reference: Lifecycle -->
+    <section id="cli-lifecycle">
+      <h2>Command Reference: Lifecycle & Steering</h2>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd start [-f] [--root DIR]</span>
+          <span class="cmd-badge">Lifecycle</span>
+        </div>
+        <p>Starts the queue execution coordinator. In background mode, spawns the single-writer daemon on the local Unix domain socket. Pass <code>-f</code> to run attached in the foreground with stdout logging.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd status</span>
+          <span class="cmd-badge">Observation</span>
+        </div>
+        <p>Queries the daemon socket and prints the current status: state (<code>idle</code>, <code>running</code>, <code>paused</code>, <code>drain</code>, <code>locked</code>), currently executing chunk, queue depth, active worker count, and pool spend.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd pause / shepherd resume</span>
+          <span class="cmd-badge">Steering</span>
+        </div>
+        <p>Pauses execution cleanly at the current step. <code>resume</code> signals the daemon to continue picking up pending chunks from the queue.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd halt</span>
+          <span class="cmd-badge">Emergency</span>
+        </div>
+        <p>Immediately kills the active agent process tree, rolls back the Git working tree cleanly to the pre-chunk commit, and places the chunk back into pending status.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd drain &lt;on|off&gt;</span>
+          <span class="cmd-badge">Quota</span>
+        </div>
+        <p>Toggles drain mode. In drain mode, Shepherd aggressively dispatches work to consume expiring quotas before weekly or daily reset windows, ignoring floor reserves.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd lockdown / shepherd unlock</span>
+          <span class="cmd-badge">Security</span>
+        </div>
+        <p>Halts all running processes immediately and locks the daemon. In lockdown, no new commands or chunks are processed until <code>unlock</code> is called with admin credentials.</p>
+      </div>
+    </section>
+
+    <!-- CLI Reference: Queue & Plan -->
+    <section id="cli-queue">
+      <h2>Command Reference: Queue & Work Orders</h2>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd queue ls [--status STATUS]</span>
+          <span class="cmd-badge">Queue</span>
+        </div>
+        <p>Lists all loaded chunks in dependency order with their title, tier, review level, attempt counter, and execution status (<code>pending</code>, <code>running</code>, <code>done</code>, <code>blocked</code>, <code>held</code>, <code>skipped</code>).</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd queue &lt;skip|retry|hold|release|diff|approve|reject|pin&gt; &lt;chunk-id&gt;</span>
+          <span class="cmd-badge">Steering &amp; Review</span>
+        </div>
+        <p>Performs live manual queue steering and human-in-the-loop review for <code>HIGH</code> risk chunks:
+          <ul>
+            <li><code>diff &lt;id&gt;</code>: Displays the stored unified diff patch for a held chunk before committing.</li>
+            <li><code>approve &lt;id&gt;</code>: Applies the held patch, stages only non-internal files, commits with <code>Approved-By: operator</code>, and marks the chunk <code>done</code>.</li>
+            <li><code>reject [--reason MSG] &lt;id&gt;</code>: Discards the held patch, resets the worktree cleanly, and marks the chunk <code>blocked</code>.</li>
+            <li><code>skip</code>: Marks chunk as skipped without failing dependents.</li>
+            <li><code>retry</code>: Resets attempt count and returns a blocked chunk to pending.</li>
+            <li><code>hold</code>: Pauses execution of a specific chunk (e.g. pending manual human sign-off).</li>
+            <li><code>release</code>: Releases a held chunk back to the scheduler.</li>
+            <li><code>pin</code>: Prioritizes chunk to run at the very front of the queue next.</li>
+          </ul>
+        </p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd plan lint [--root DIR] [--plan DIR] [--max-files N]</span>
+          <span class="cmd-badge">Validation</span>
+        </div>
+        <p>Static pre-execution linter. Enforces work order schema integrity: checks that referenced files exist or are tagged <code>new:</code>, validates ADR references, ensures declared test targets exist, and detects circular dependency graphs.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd plan split [--parts N] [--write] &lt;chunk.md&gt;</span>
+          <span class="cmd-badge">Decomposition</span>
+        </div>
+        <p>Partitions an oversize work order across file boundaries into sequential sub-chunks (<code>01A.1</code>, <code>01A.2</code>) with automatic dependency chaining and markdown serialization.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd plan test-first [--write] [--out-dir DIR] &lt;chunk-file-or-id&gt;</span>
+          <span class="cmd-badge">TDD Anti-Cheat</span>
+        </div>
+        <p>Decomposes a chunk into an automated two-stage Test-Driven Development (TDD) pair: <code>&lt;id&gt;.spec</code> (test specification &amp; fixture authoring) and <code>&lt;id&gt;.impl</code> (production implementation). The implementation stage strictly mounts the test files as <strong>read-only</strong> (<code>read_only_tests: true</code>); any modification, weakening, or deletion of test files is instantly blocked by the verification scope gate, preventing LLM test-tampering.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd plan migrate --from bold-lines [--out DIR]</span>
+          <span class="cmd-badge">Migration</span>
+        </div>
+        <p>One-shot migrator for legacy work orders, converting them into validated YAML frontmatter Markdown files.</p>
+      </div>
+    </section>
+
+    <!-- CLI Reference: Config & Quota -->
+    <section id="cli-config">
+      <h2>Command Reference: Config & Quota Management</h2>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd config &lt;show|set|reload&gt;</span>
+          <span class="cmd-badge">Config</span>
+        </div>
+        <p>Inspects or updates runtime configuration. <code>config set &lt;key&gt; &lt;value&gt;</code> applies live overrides stored in SQLite without restarting the daemon; <code>config reload</code> re-reads <code>shepherd.toml</code>.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd quota &lt;show|set-floor|set-reserve|tier&gt;</span>
+          <span class="cmd-badge">Quota</span>
+        </div>
+        <p>Inspects usage percentages and headroom across provider pools (Claude, Antigravity, OpenAI). Manage weekly reserve floors to prevent automated runs from consuming human developer quotas.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">Cost &amp; Token Budget Circuit Breakers &amp; Pre-Commit Secret Scanner ([policy] &amp; [[gates]])</span>
+          <span class="cmd-badge">FinOps &amp; DLP</span>
+        </div>
+        <p>Prevent runaway API spend and accidental secret commits with built-in budget circuit breakers and pre-commit secret scanning:
+          <pre><code>[policy]
+max_chunk_cost_usd = 2.50    # Block chunk immediately if cumulative attempt spend exceeds $2.50
+max_sprint_cost_usd = 25.00  # Pause daemon &amp; alert operator if sprint spend exceeds $25.00
+sandbox_backend = "podman"   # Optional: "bwrap", "podman", or "docker"
+container_image = "golang:1.22"
+
+[[gates]]
+name = "secrets"
+builtin = "secrets"          # Scans modified worktree files for AWS, Anthropic, OpenAI, GitHub, Slack &amp; PEM keys
+hard = true</code></pre>
+        </p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">Operator Notifications ([notify] in shepherd.toml)</span>
+          <span class="cmd-badge">Alerting</span>
+        </div>
+        <p>Shepherd automatically alerts operators via Slack, Discord, or desktop popups when runs need attention:
+          <pre><code>[notify]
+events = ["chunk_held", "queue_blocked", "sprint_done", "quota_critical"]
+slack_webhook_url = "https://hooks.slack.com/services/..."
+discord_webhook_url = "https://discord.com/api/webhooks/..."
+desktop = true  # notify-send on Linux, AppleScript osascript on macOS</code></pre>
+        Dispatches instantly when a high-risk chunk is held for manual sign-off, when an adapter blocks, or when all sprint chunks complete.
+        </p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">Flaky Test Quarantine & Delta Attribution ([verify] in shepherd.toml)</span>
+          <span class="cmd-badge">Reliability</span>
+        </div>
+        <p>Eliminate gate failures caused by legacy flaky tests or pre-existing bugs in evolving codebases:
+          <pre><code>[verify]
+flake_retries = 3      # Rerun failed test up to 3 times before declaring gate failure
+base_commit_delta = true  # Check base commit if a test fails</code></pre>
+          When <code>base_commit_delta = true</code> and a test gate fails, Shepherd executes the identical test target against the base commit (<code>HEAD</code>) in an isolated, detached worktree. If the test also fails on the base commit, Shepherd recognizes the failure as <strong>pre-existing</strong>, records a <code>test.quarantined</code> audit log event, and allows the chunk to proceed without penalizing model quota.
+        </p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">Worker Slot Multiplexing & Hardware Safeguards ([slots] in shepherd.toml)</span>
+          <span class="cmd-badge">Performance & Safety</span>
+        </div>
+        <p>Safely leverage multi-core developer workstations without branch sprawl, RAM exhaustion, or UI lag:
+          <pre><code>[slots]
+max_slots = 2         # Bounded pool of detached worktree directories (.shepherd/slots/slot-N)
+min_free_ram_gb = 4.0 # Safety floor: refuse new slot if host RAM falls below 4 GB
+max_gpu_workers = 1   # Strict GPU concurrency limit (auto-detected via nvidia-smi -L)
+desktop_priority = true # Wraps all agent & gate subprocesses with nice -n 10 and ionice -c 3</code></pre>
+          <ul>
+            <li><strong>Zero Permanent Branches:</strong> Slots are mounted on detached <code>HEAD</code>. Patches are extracted via <code>git diff</code> and applied directly to <code>main</code> with serial integration.</li>
+            <li><strong>GPU Concurrency Gate:</strong> Limits local GPU inference (Ollama, vLLM, OpenCode) to the physical GPU count (e.g., 1 GPU = 1 local agent) to avoid display driver crashes.</li>
+            <li><strong>Gate Execution Mutex:</strong> Serializes verification gate executions (<code>Concurrency = 1</code>) so only one test suite runs at a time, eliminating CPU cache thrashing and false test timeouts.</li>
+            <li><strong>Desktop Protection:</strong> Agents run at idle I/O priority (<code>ionice -c 3</code>) and low CPU priority (<code>nice -n 10</code>), guaranteeing that editors and terminals remain responsive.</li>
+          </ul>
+        </p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">Dynamic Tier Escalation & Cascading Repair ([repair] in shepherd.toml)</span>
+          <span class="cmd-badge">Repair Engine</span>
+        </div>
+        <p>Adaptive multi-round repair with intelligent model escalation and cross-model diagnostic context injection:
+          <pre><code>[repair]
+chain = ["haiku:1", "sonnet:2", "opus:1"]
+mechanical_fix = { tier = "haiku", max_errors = 3, codes = ["TS2304"] }</code></pre>
+          <ul>
+            <li><strong>Attempt 1:</strong> Initial chunk execution on the assigned cost-optimized tier.</li>
+            <li><strong>Attempt 2 (Repair):</strong> If failures are mechanical (simple typing/syntax), keep low-cost tier; if failures are semantic (test assertion failures, panics, logic errors), dynamically escalate to a frontier model (Sonnet / GPT-4o / Gemini Pro).</li>
+            <li><strong>Attempt 3 (Final Review):</strong> Escalate to the top tier with <em>Cross-Model Diagnostic History</em> injected into the prompt, summarizing exactly why prior models failed so the frontier model addresses the root cause directly.</li>
+          </ul>
+        </p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">AST Repo Map &amp; Golden Example Pre-Injection</span>
+          <span class="cmd-badge">Context Optimization</span>
+        </div>
+        <p>Accelerate agent execution and reduce token consumption by pre-injecting structural repository intelligence:
+          <ul>
+            <li><strong>AST Symbol Indexing:</strong> Automatically parses and formats top-level exported types, structs, interfaces, and function signatures across Go (via native <code>go/ast</code>), TypeScript, and Python files in the target package.</li>
+            <li><strong>Golden Example Pre-Injection:</strong> Automatically locates a recently completed commit in Git history (<code>feat(...)</code>) that touched similar directories, extracting its diff snippet to demonstrate coding conventions, project idioms, and testing patterns.</li>
+            <li><strong>Zero Exploration Overhead:</strong> Eliminates the 3–5 initial exploratory tool calls that agent CLIs typically burn to discover project interfaces.</li>
+          </ul>
+        </p>
+      </div>
+    </section>
+
+    <!-- CLI Reference: LAN Workers -->
+    <section id="cli-workers">
+      <h2>Command Reference: LAN Workers & mTLS</h2>
+
+      <p>Shepherd coordinates multiple secondary worker machines across a local network using mutual TLS 1.3 with a private root Certificate Authority.</p>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd worker add [--addr HOST:PORT]</span>
+          <span class="cmd-badge">Primary Node</span>
+        </div>
+        <p>Generates a one-time 128-bit pairing token with a 10-minute expiration and displays the pairing connection string for the remote worker.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd worker join &lt;pairing-string&gt;</span>
+          <span class="cmd-badge">Worker Node</span>
+        </div>
+        <p>Executes on the worker machine: verifies the primary node's pinned CA public-key hash, sends an HMAC-SHA256 authenticated CSR, receives a 7-day signed client certificate, and joins the worker pool.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd worker ls</span>
+          <span class="cmd-badge">Worker Pool</span>
+        </div>
+        <p>Lists all paired worker nodes, public-key fingerprints, roles, heartbeat timestamps, and current state.</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd worker revoke &lt;worker-id&gt;</span>
+          <span class="cmd-badge">Security</span>
+        </div>
+        <p>Instantly revokes a worker certificate in SQLite and drops active TCP/TLS connections mid-session (STRIDE S4 mitigation).</p>
+      </div>
+    </section>
+
+    <!-- CLI Reference: Service & Retrospectives -->
+    <section id="cli-service">
+      <h2>Command Reference: Background Service, PRs &amp; Retrospectives</h2>
+
+      <div class="cmd-card" id="cli-pr">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd pr [--sprint ID] [--create] [--draft] [--base main]</span>
+          <span class="cmd-badge">Pull Requests</span>
+        </div>
+        <p>Generates a structured Markdown Pull Request summary table containing all sprint work orders, assigned tiers, worker attributions, and total USD/token telemetry. Pass <code>--create</code> to automatically open the Pull Request via the GitHub CLI (<code>gh pr create</code>).</p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd service &lt;install|uninstall|status&gt;</span>
+          <span class="cmd-badge">System Service</span>
+        </div>
+        <p>Installs Shepherd as a native unprivileged user background daemon:
+          <ul>
+            <li><strong>Linux</strong>: Configures and enables <code>systemd</code> user unit (<code>~/.config/systemd/user/shepherd.service</code>).</li>
+            <li><strong>macOS</strong>: Configures and loads <code>launchd</code> user agent (<code>~/Library/LaunchAgents/ai.shepherd.daemon.plist</code>).</li>
+          </ul>
+        </p>
+      </div>
+
+      <div class="cmd-card" id="cli-retro">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd retro [--db PATH] [--format md|table]</span>
+          <span class="cmd-badge">Analytics</span>
+        </div>
+        <p>Generates sprint retrospective analytics aggregating completed vs blocked chunks, attempt ratios, quota spend by pool, and average cost per chunk.</p>
+      </div>
+    </section>
+
+    <!-- CLI Reference: Diagnostics & Auditing -->
+    <section id="cli-diagnostics">
+      <h2>Command Reference: Diagnostics & Auditing</h2>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd dashboard [--once] [--tab &lt;overview|logs|top|gpu|nvtop&gt;]</span>
+          <span class="cmd-badge">TUI Dashboards</span>
+        </div>
+        <p>Interactive ANSI terminal user interface with 5 switchable dashboards:
+          <ul>
+            <li><code>[1] OVERVIEW</code>: Live quota gauges, active worker execution transcript, queue status, and alerts.</li>
+            <li><code>[2] LOGS</code>: Real-time streaming SHA-256 hash-chained audit ledger, daemon state transitions, and live subprocess logs.</li>
+            <li><code>[3] TOP</code>: Live system CPU, RAM, load averages, and top process monitor. Press <code>[x]</code> or <code>[Enter]</code> to launch full-screen interactive <code>top</code>.</li>
+            <li><code>[4] LLAMAGPUTOP</code>: Real-time GPU & LLM inference monitor (integrated from <code>tools/llamagputop/</code>) tracking VRAM, GPU compute, temperature, power, and active llama.cpp model context. Press <code>[x]</code> or <code>[Enter]</code> for interactive view.</li>
+            <li><code>[5] NVTOP</code>: Live NVIDIA/AMD GPU engine and process usage table. Press <code>[x]</code> or <code>[Enter]</code> to launch full-screen interactive <code>nvtop</code>.</li>
+          </ul>
+          Navigation & Controls:
+          <ul>
+            <li><code>1</code>, <code>2</code>, <code>3</code>, <code>4</code>, <code>5</code>: Switch directly to any dashboard tab.</li>
+            <li><code>Tab</code> / <code>[</code> / <code>]</code>: Cycle sequentially through all 5 dashboard views.</li>
+            <li><code>x</code> / <code>Enter</code>: Launch full-screen interactive tool (top, llamagputop, nvtop) with seamless raw mode restore upon exit.</li>
+            <li><code>p</code> (pause), <code>r</code> (resume), <code>h</code> (halt), <code>d</code> (drain), <code>l</code> (lockdown), <code>u</code> (unlock), <code>q</code> (quit).</li>
+          </ul>
+        </p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd web [--addr HOST:PORT] [--port PORT]</span>
+          <span class="cmd-badge">Browser Web UI</span>
+        </div>
+        <p>Zero-dependency embedded web dashboard and visual DAG dependency graph:
+          <ul>
+            <li><strong>Interactive Visual DAG:</strong> Real-time rendered dependency graph with color-coded chunk nodes: Green (Done), Blue (Running), Orange (Held), Red (Blocked), Gray (Pending). Click any node to inspect file targets, view held unified diffs, and trigger Approve, Reject, Release, Retry, or Skip actions.</li>
+            <li><strong>Remote Daemon Controls:</strong> Mobile &amp; tablet friendly buttons to Pause, Resume, Drain, and Halt runs directly from the browser, protected by CSRF <code>Origin</code> / <code>Sec-Fetch-Site</code> verification and optional <code>SHEPHERD_WEB_TOKEN</code> bearer authentication.</li>
+            <li><strong>Live Event Streaming:</strong> Server-Sent Events (SSE) stream audit logs and status updates to connected clients in real time.</li>
+          </ul>
+        </p>
+      </div>
+
+      <div class="cmd-card">
+        <div class="cmd-header">
+          <span class="cmd-title">shepherd audit [--tail N]</span>
+          <span class="cmd-badge">Audit Log</span>
+        </div>
+        <p>Reads the immutable, append-only SHA-256 hash-chained event log. Verifies cryptographic chain continuity back to the Genesis Hash, verifying that no historical states or decisions have been tampered with.</p>
+      </div>
+    </section>
+
+    <!-- Work Order Specification -->
+    <section id="workorders">
+      <h2>Work Order Specification (`docs/plan/`)</h2>
+      <p>Each chunk in Shepherd is defined as an individual Markdown file containing strict YAML frontmatter:</p>
+
+      <pre><code>---
+id: 01A
+title: User Authentication Middleware
+sprint: S01
+depends_on: []
+review: LOW              # LOW, MEDIUM, or HIGH
+effort: S                # S, M, or L
+status: pending          # pending, running, done, blocked, skipped, held
+files:
+  - internal/auth/middleware.go
+  - new:internal/auth/middleware_test.go
+tests:
+  - internal/auth/middleware_test.go
+no_tests_reason: ""      # Required if tests is empty
+---
+
+## Goal
+Implement bearer token authentication middleware with timing-safe comparison.
+
+## Scope
+Validate Authorization headers against SQLite active sessions. Reject expired tokens.
+
+## Done when
+- Unit tests in internal/auth/middleware_test.go pass with 100% branch coverage.
+- Content-loss gate reports zero unexplained line deletions.</code></pre>
+
+      <div class="callout warning">
+        <div class="callout-title">File Scope Enforcement</div>
+        The <code>files:</code> list is mandatory. Agents are strictly confined to modifying only files explicitly declared in the frontmatter. New files must be tagged with <code>new:</code>. The scope gate rejects any patch attempting edits outside declared boundaries.
+      </div>
+    </section>
+
+    <!-- Agent CLI Adapters -->
+    <section id="adapters">
+      <h2>Supported Agent CLI Adapters</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Adapter</th>
+            <th>Name</th>
+            <th>Command Invocations</th>
+            <th>Capabilities</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Claude Code</strong></td>
+            <td><code>claude-cli</code></td>
+            <td><code>claude -p &lt;prompt&gt; --effort &lt;level&gt;</code></td>
+            <td>Effort tiers, prompt injection, usage parsing</td>
+          </tr>
+          <tr>
+            <td><strong>Google Antigravity</strong></td>
+            <td><code>agy</code></td>
+            <td><code>agy -p &lt;prompt&gt; --model &lt;model&gt;</code></td>
+            <td>Model selection, usage reporting</td>
+          </tr>
+          <tr>
+            <td><strong>OpenAI Codex</strong></td>
+            <td><code>codex</code></td>
+            <td><code>codex exec -c model_reasoning_effort=... -</code></td>
+            <td>Stdin streaming, unmetered pool support</td>
+          </tr>
+          <tr>
+            <td><strong>Aider</strong></td>
+            <td><code>aider</code></td>
+            <td><code>aider --yes --no-auto-commits --message &lt;prompt&gt;</code></td>
+            <td>Multi-file editing, auto-git coordination</td>
+          </tr>
+          <tr>
+            <td><strong>Gemini CLI</strong></td>
+            <td><code>gemini-cli</code></td>
+            <td><code>gemini -p &lt;prompt&gt; --model &lt;model&gt;</code></td>
+            <td>Direct prompt execution</td>
+          </tr>
+          <tr>
+            <td><strong>OpenAI-Compatible</strong></td>
+            <td><code>openai-compat</code></td>
+            <td><code>opencode run --auto &lt;prompt&gt;</code></td>
+            <td>Local LLMs / vLLM / Ollama backends</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Sandboxing & Security -->
+    <section id="sandboxing">
+      <h2>Security & OS Containment Model</h2>
+      <p>Shepherd implements multi-layered OS and container containment to safeguard host systems when executing agent code and verification gates:</p>
+
+      <ul>
+        <li><strong>Bubblewrap (`bwrap`) on Linux</strong>: Runs agent subprocesses in isolated mount namespaces. Masks <code>~/.shepherd</code>, <code>$HOME</code>, control sockets, and blocks network access via <code>--unshare-net</code> for verification gates while permitting outbound API traffic only for cloud adapters that declare <code>RequiresNetwork</code>.</li>
+        <li><strong>macOS Seatbelt (`sandbox-exec`)</strong>: Escapes all profile paths against SBPL injection, restricts file writes strictly to the active worktree root, and explicitly blocks file reads on <code>.shepherd</code>, control sockets, and sensitive <code>$HOME</code> credential directories (<code>~/.ssh</code>, <code>~/.aws</code>, <code>~/.gnupg</code>, <code>~/.kube</code>, <code>~/.config/gcloud</code>).</li>
+        <li><strong>Rootless Container Sandbox (`podman` / `docker`)</strong>: Optional container isolation backend (<code>sandbox_backend = "podman" | "docker"</code>) running with <code>--cap-drop=ALL</code>, <code>--security-opt=no-new-privileges</code>, <code>--read-only</code> rootfs, and isolated <code>tmpfs</code> mounts over masked state directories.</li>
+        <li><strong>Environment Scrubbing (`ScrubEnv`) &amp; Explicit Provider Allowlists</strong>: Filters out sensitive host environment variables (<code>SSH_AUTH_SOCK</code>, <code>AWS_*</code>, <code>GITHUB_TOKEN</code>, <code>KUBECONFIG</code>, <code>SHEPHERD_SOCKET</code>) while forwarding only the specific provider API key required by the active adapter.</li>
+        <li><strong>Constant-Time Token Auth &amp; Web CSRF Protection</strong>: Control socket bearer tokens are verified with <code>subtle.ConstantTimeCompare</code> (never matching empty unset env vars), and the embedded Web UI enforces <code>Origin</code> / <code>Sec-Fetch-Site</code> CSRF checks plus optional <code>SHEPHERD_WEB_TOKEN</code> authentication.</li>
+        <li><strong>Pre-Commit Secret Scanner &amp; Redaction Sink</strong>: The built-in <code>secrets</code> gate blocks commits containing leaked credentials, while <code>redact.Sanitize</code> scrubs API keys, tokens, and private keys before persisting transcripts to SQLite, audit logs, or webhook notifications.</li>
+      </ul>
+    </section>
+
+    <div class="footer">
+      Shepherd v0.7.0 &bull; Licensed under Apache-2.0 &bull; Generated for Developer Pair-Programming
+    </div>
+
+  </main>
+</body>
+</html>

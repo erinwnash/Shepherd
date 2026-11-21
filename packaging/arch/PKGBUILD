@@ -1,0 +1,31 @@
+# Maintainer: Shepherd Maintainers <shepherd@erinwnash.github.io>
+pkgname=shepherd
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Resilient orchestrator for batch coding agents (Claude, Antigravity, Codex)"
+arch=('x86_64' 'aarch64')
+url="https://github.com/erinwnash/Shepherd"
+license=('Apache-2.0')
+depends=('glibc')
+makedepends=('go')
+optdepends=(
+    'bubblewrap: sandboxed execution containment'
+    'git: version control and worktree operations'
+    'sqlite: state inspection CLI'
+)
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+    cd "$pkgname-$pkgver"
+    export CGO_ENABLED=0
+    export GOFLAGS="-trimpath -mod=readonly -modcacherw"
+    go build -ldflags "-s -w -X main.version=$pkgver" -o build/shepherd ./cmd/shepherd
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+    install -Dm755 build/shepherd "$pkgdir/usr/bin/shepherd"
+    install -Dm644 packaging/systemd/shepherd.service "$pkgdir/usr/lib/systemd/user/shepherd.service"
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}

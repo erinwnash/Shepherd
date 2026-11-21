@@ -1,0 +1,96 @@
+# Shepherd ntfy remote commands — DEMO (INACTIVE).
+#
+# This file is never loaded from here. To use it, copy it to <project>/.shepherd/ntfy-commands.toml,
+# rename keywords to taste, delete what you don't want, and set `enabled = true`.
+#
+# How it works
+#   Send a message to the ntfy topic whose FIRST WORD is a keyword, e.g. from the ntfy app or:
+#     curl -d "sheep-hold S01-c03" https://ntfy.sh/<your-topic>
+#   Matching is case-insensitive; extra words after the keyword are arguments (chunk id only).
+#   Shepherd replies on the topic with the result ("Remote Command: <keyword>").
+#   Every recognised keyword is written to the event log with actor "ntfy":
+#     shepherd audit            # look for remote.command and remote.listening events
+#
+# Never available remotely: unlock, approve/reject, config set, quota changes.
+# `obliviate` is built in, always on, never rate-limited, and cannot be remapped.
+
+schema_version = 1
+enabled = false                                # DEMO: flip to true only after copying into .shepherd/
+
+# url = "https://ntfy.sh/shepherd-cmd-CHANGE-ME-long-random"  # separate command topic (recommended)
+# token_env = "NTFY_TOKEN"                     # access token for a protected topic, read from the env
+rate_limit_per_min = 10                        # non-emergency commands per minute
+allow_escalating = true                        # needed for start/resume/drain-off/retry/release
+
+# --- Emergency ---------------------------------------------------------------------------------
+
+[[command]]
+keyword = "obliviate"
+action = "lockdown"
+description = "FULL STOP: kill the running chunk, roll back, lock down until a local `shepherd unlock`"
+
+[[command]]
+keyword = "sheep-halt"
+action = "halt"
+description = "Abort the running chunk, roll back its worktree and requeue it (the loop carries on)"
+
+# --- Flow control (safe: these only slow things down) -------------------------------------------
+
+[[command]]
+keyword = "sheep-pause"
+action = "pause"
+description = "Pause the queue between chunks"
+
+[[command]]
+keyword = "sheep-stop"
+action = "stop"
+description = "Clean stop at the next chunk boundary"
+
+[[command]]
+keyword = "sheep-drain"
+action = "drain-on"
+description = "Enter drain mode (spend remaining quota before reset)"
+
+[[command]]
+keyword = "sheep-status"
+action = "status"
+description = "Reply on the topic with state and queue counts"
+
+# --- Queue (take one chunk id: `sheep-hold S01-c03`) --------------------------------------------
+
+[[command]]
+keyword = "sheep-hold"
+action = "hold"
+description = "Hold a chunk so it will not be scheduled"
+
+[[command]]
+keyword = "sheep-skip"
+action = "skip"
+description = "Skip a chunk"
+
+# --- Escalating (start or widen work; require allow_escalating = true) --------------------------
+
+[[command]]
+keyword = "sheep-start"
+action = "start"
+description = "Start processing the queue"
+
+[[command]]
+keyword = "sheep-resume"
+action = "resume"
+description = "Resume after a pause"
+
+[[command]]
+keyword = "sheep-undrain"
+action = "drain-off"
+description = "Leave drain mode"
+
+[[command]]
+keyword = "sheep-retry"
+action = "retry"
+description = "Retry a blocked chunk"
+
+[[command]]
+keyword = "sheep-release"
+action = "release"
+description = "Release a held chunk"

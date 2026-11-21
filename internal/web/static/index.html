@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShepherdAI — Live Dashboard & DAG Visualizer</title>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card-bg: #131b26;
+      --card-border: #1e293b;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --running: #3b82f6;
+      --pending: #64748b;
+      --code-bg: #05080f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+      padding-bottom: 3rem;
+    }
+
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge.idle { background: #334155; color: #cbd5e1; }
+    .badge.running { background: rgba(59, 130, 246, 0.2); color: var(--running); border: 1px solid var(--running); }
+    .badge.paused { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid var(--warning); }
+    .badge.draining { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid #c084fc; }
+    .badge.stopping { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    button {
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid #334155;
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    button:hover { background: #334155; }
+    button.primary { background: var(--accent); color: #0b0f17; border-color: var(--accent); }
+    button.primary:hover { background: var(--accent-hover); }
+    button.danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); border-color: rgba(239, 68, 68, 0.5); }
+    button.danger:hover { background: rgba(239, 68, 68, 0.4); }
+
+    nav.tabs {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 1.5rem 0;
+      background: var(--bg);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    main {
+      padding: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Overview metrics */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+    }
+
+    .metric-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    .metric-val {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* DAG visualizer */
+    .dag-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      min-height: 500px;
+      overflow: auto;
+      position: relative;
+    }
+
+    .dag-svg {
+      width: 100%;
+      min-height: 480px;
+      display: block;
+    }
+
+    .dag-node {
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .dag-node:hover {
+      filter: brightness(1.2);
+    }
+
+    .dag-node rect {
+      rx: 6;
+      ry: 6;
+      stroke-width: 2;
+    }
+
+    .dag-node.done rect { fill: #064e3b; stroke: var(--success); }
+    .dag-node.running rect { fill: #1e3a8a; stroke: var(--running); }
+    .dag-node.held rect { fill: #78350f; stroke: var(--warning); }
+    .dag-node.blocked rect { fill: #7f1d1d; stroke: var(--danger); }
+    .dag-node.pending rect { fill: #1e293b; stroke: var(--pending); }
+
+    .dag-node text {
+      fill: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    .dag-edge {
+      stroke: #475569;
+      stroke-width: 2;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+
+    /* Logs view */
+    .logs-panel {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: ui-monospace, monospace;
+      font-size: 0.85rem;
+      max-height: 600px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    .log-line {
+      padding: 0.2rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .log-time { color: var(--text-muted); margin-right: 0.5rem; }
+    .log-event { color: var(--accent); font-weight: 600; margin-right: 0.5rem; }
+
+    /* Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      width: 90%;
+      max-width: 550px;
+      padding: 1.5rem;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>ShepherdAI</h1>
+      <span id="daemon-state" class="badge idle">IDLE</span>
+      <span id="active-chunk" style="font-size: 0.85rem; color: var(--text-muted);">No active chunk</span>
+    </div>
+    <div class="header-actions">
+      <button id="btn-pause" onclick="postAction('pause')">Pause</button>
+      <button id="btn-resume" onclick="postAction('resume')">Resume</button>
+      <button id="btn-drain" onclick="postAction('drain')">Drain</button>
+      <button id="btn-halt" class="danger" onclick="postHalt()">Halt</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="switchTab('dag')">DAG Graph</button>
+    <button class="tab-btn" onclick="switchTab('overview')">Overview</button>
+    <button class="tab-btn" onclick="switchTab('queue')">Queue Table</button>
+    <button class="tab-btn" onclick="switchTab('logs')">Live Logs</button>
+  </nav>
+
+  <main>
+    <!-- TAB 1: DAG Graph -->
+    <div id="tab-dag" class="tab-content active">
+      <div class="dag-container">
+        <svg id="dag-svg" class="dag-svg">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
+            </marker>
+          </defs>
+          <g id="dag-edges"></g>
+          <g id="dag-nodes"></g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- TAB 2: Overview -->
+    <div id="tab-overview" class="tab-content">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-title">Completed Chunks</div>
+          <div id="metric-done" class="metric-val">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Pending / In-Flight</div>
+          <div id="metric-pending" class="metric-val">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Held / Blocked</div>
+          <div id="metric-blocked" class="metric-val">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Consecutive Blocks</div>
+          <div id="metric-blocks" class="metric-val">0</div>
+        </div>
+      </div>
+      <div class="metric-card" style="margin-top: 1rem;">
+        <div class="metric-title">Sprint Health &amp; Progress</div>
+        <div id="sprint-progress-bar" style="height: 12px; background: #1e293b; border-radius: 6px; overflow: hidden; margin: 0.5rem 0;">
+          <div id="sprint-progress-fill" style="width: 0%; height: 100%; background: var(--success); transition: width 0.3s;"></div>
+        </div>
+        <div id="sprint-progress-text" style="font-size: 0.85rem; color: var(--text-muted);">0% complete</div>
+      </div>
+      <div class="metric-card" style="margin-top: 1rem;">
+        <div class="metric-title">Agent &amp; Model Stack</div>
+        <div id="agent-stack-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Detecting local and cloud agent tiers...</div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Queue Table -->
+    <div id="tab-queue" class="tab-content">
+      <table style="width: 100%; border-collapse: collapse; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--card-border); text-align: left; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">
+            <th style="padding: 0.75rem 1rem;">ID</th>
+            <th style="padding: 0.75rem 1rem;">Title</th>
+            <th style="padding: 0.75rem 1rem;">Status</th>
+            <th style="padding: 0.75rem 1rem;">Tier / Worker</th>
+            <th style="padding: 0.75rem 1rem;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="queue-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- TAB 4: Live Logs -->
+    <div id="tab-logs" class="tab-content">
+      <div id="logs-panel" class="logs-panel">Connecting to live event stream...</div>
+    </div>
+  </main>
+
+  <!-- Chunk Details Modal -->
+  <div id="chunk-modal" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Chunk Details</h3>
+        <button onclick="closeModal()">✕</button>
+      </div>
+      <div id="modal-body" style="font-size: 0.9rem; color: var(--text);"></div>
+      <div class="modal-actions" id="modal-actions"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentChunks = [];
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      event.target.classList.add('active');
+      if (tabId === 'dag') renderDAG(currentChunks);
+    }
+
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/status');
+        if (!res.ok) return;
+        const st = await res.json();
+        const badge = document.getElementById('daemon-state');
+        badge.className = 'badge ' + st.state.toLowerCase();
+        badge.textContent = st.state;
+
+        const activeChunk = document.getElementById('active-chunk');
+        if (st.running_chunk_id || st.active_chunk_id) {
+          activeChunk.textContent = 'Active: ' + (st.running_chunk_id || st.active_chunk_id);
+        } else if (st.stack && st.stack.length > 0) {
+          activeChunk.textContent = 'Stack: ' + st.stack.join(' · ');
+        } else {
+          activeChunk.textContent = 'No active chunk';
+        }
+
+        const stackEl = document.getElementById('agent-stack-list');
+        if (stackEl && st.stack && Array.isArray(st.stack) && st.stack.length > 0) {
+          stackEl.innerHTML = st.stack.map(item =>
+            `<span class="badge running" style="text-transform: none; font-family: ui-monospace, monospace;">${item}</span>`
+          ).join('');
+        }
+
+        document.getElementById('metric-blocks').textContent = st.consecutive_blocks || 0;
+      } catch (e) {
+        console.error('status fetch failed', e);
+      }
+    }
+
+    async function fetchQueue() {
+      try {
+        const res = await fetch('/api/queue');
+        if (!res.ok) return;
+        const chunks = await res.json();
+        currentChunks = chunks;
+        renderQueueTable(chunks);
+        renderMetrics(chunks);
+        renderDAG(chunks);
+      } catch (e) {
+        console.error('queue fetch failed', e);
+      }
+    }
+
+    function renderMetrics(chunks) {
+      let done = 0, pending = 0, blocked = 0;
+      chunks.forEach(c => {
+        if (c.status === 'done') done++;
+        else if (c.status === 'blocked' || c.status === 'held') blocked++;
+        else pending++;
+      });
+      document.getElementById('metric-done').textContent = done;
+      document.getElementById('metric-pending').textContent = pending;
+      document.getElementById('metric-blocked').textContent = blocked;
+
+      const total = chunks.length || 1;
+      const pct = Math.round((done / total) * 100);
+      document.getElementById('sprint-progress-fill').style.width = pct + '%';
+      document.getElementById('sprint-progress-text').textContent = pct + '% complete (' + done + '/' + chunks.length + ' chunks)';
+    }
+
+    function renderQueueTable(chunks) {
+      const tbody = document.getElementById('queue-tbody');
+      tbody.innerHTML = '';
+      chunks.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid var(--card-border)';
+        tr.innerHTML = `
+          <td style="padding: 0.75rem 1rem; font-weight: 600;">${c.id}</td>
+          <td style="padding: 0.75rem 1rem;">${c.title}</td>
+          <td style="padding: 0.75rem 1rem;"><span class="badge ${c.status}">${c.status}</span></td>
+          <td style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.85rem;">${c.tier || 'primary'}</td>
+          <td style="padding: 0.75rem 1rem;">
+            ${c.status === 'held' ? `<button class="primary" onclick="postChunkAction('approve', '${c.id}')">Approve</button> <button class="danger" onclick="postChunkAction('reject', '${c.id}')">Reject</button> <button onclick="postChunkAction('release', '${c.id}')">Release</button>` : ''}
+            ${c.status === 'blocked' ? `<button onclick="postChunkAction('retry', '${c.id}')">Retry</button>` : ''}
+            <button onclick="postChunkAction('skip', '${c.id}')">Skip</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderDAG(chunks) {
+      const nodesG = document.getElementById('dag-nodes');
+      const edgesG = document.getElementById('dag-edges');
+      if (!nodesG || !edgesG) return;
+      nodesG.innerHTML = '';
+      edgesG.innerHTML = '';
+
+      const nodeWidth = 120;
+      const nodeHeight = 44;
+      const colWidth = 180;
+      const rowHeight = 75;
+
+      // Group into visual levels
+      const nodeMap = {};
+      chunks.forEach((c, i) => {
+        const col = i % 5;
+        const row = Math.floor(i / 5);
+        const x = 50 + col * colWidth;
+        const y = 50 + row * rowHeight;
+        nodeMap[c.id] = { x: x + nodeWidth / 2, y: y + nodeHeight / 2 };
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'dag-node ' + (c.status || 'pending'));
+        g.onclick = () => openChunkModal(c);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', nodeWidth);
+        rect.setAttribute('height', nodeHeight);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x + nodeWidth / 2);
+        text.setAttribute('y', y + nodeHeight / 2);
+        text.textContent = c.id;
+
+        g.appendChild(rect);
+        g.appendChild(text);
+        nodesG.appendChild(g);
+      });
+
+      // Render edges for dependencies
+      chunks.forEach(c => {
+        if (c.depends_on && Array.isArray(c.depends_on)) {
+          c.depends_on.forEach(depID => {
+            if (nodeMap[depID] && nodeMap[c.id]) {
+              const p1 = nodeMap[depID];
+              const p2 = nodeMap[c.id];
+              const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+              line.setAttribute('class', 'dag-edge');
+              line.setAttribute('x1', p1.x);
+              line.setAttribute('y1', p1.y);
+              line.setAttribute('x2', p2.x);
+              line.setAttribute('y2', p2.y);
+              edgesG.appendChild(line);
+            }
+          });
+        }
+      });
+    }
+
+    async function openChunkModal(chunk) {
+      document.getElementById('modal-title').textContent = chunk.id + ' — ' + chunk.title;
+      document.getElementById('modal-body').innerHTML = `
+        <p><strong>Status:</strong> <span class="badge ${chunk.status}">${chunk.status}</span></p>
+        <p style="margin-top: 0.5rem;"><strong>Assigned Tier:</strong> ${chunk.tier || 'primary'}</p>
+        <p style="margin-top: 0.5rem;"><strong>Last Reason / Error:</strong> ${chunk.reason || 'None'}</p>
+        <pre id="modal-diff" style="display:none; margin-top: 0.75rem; background: var(--code-bg); padding: 0.75rem; border-radius: 6px; font-size: 0.78rem; max-height: 220px; overflow: auto;"></pre>
+      `;
+      const actions = document.getElementById('modal-actions');
+      actions.innerHTML = `
+        ${chunk.status === 'held' ? `<button class="primary" onclick="postChunkAction('approve', '${chunk.id}'); closeModal();">Approve & Commit</button><button class="danger" onclick="postChunkAction('reject', '${chunk.id}'); closeModal();">Reject</button>` : ''}
+        ${chunk.status === 'blocked' ? `<button class="primary" onclick="postChunkAction('retry', '${chunk.id}'); closeModal();">Retry</button>` : ''}
+        <button onclick="postChunkAction('skip', '${chunk.id}'); closeModal();">Skip</button>
+        <button onclick="closeModal()">Close</button>
+      `;
+      document.getElementById('chunk-modal').style.display = 'flex';
+      if (chunk.status === 'held') {
+        try {
+          const r = await fetch('/api/diff?chunk_id=' + encodeURIComponent(chunk.id));
+          if (r.ok) {
+            const d = await r.json();
+            if (d.diff) {
+              const pre = document.getElementById('modal-diff');
+              pre.textContent = d.diff;
+              pre.style.display = 'block';
+            }
+          }
+        } catch (e) {}
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('chunk-modal').style.display = 'none';
+    }
+
+    async function postAction(action) {
+      await fetch('/api/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: action })
+      });
+      fetchStatus();
+    }
+
+    async function postHalt() {
+      if (confirm('Halt current chunk immediately and rollback git worktree?')) {
+        await fetch('/api/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'halt', reason: 'Operator manual halt via Web UI' })
+        });
+        fetchStatus();
+      }
+    }
+
+    async function postChunkAction(action, chunkID) {
+      await fetch('/api/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: action, chunk_id: chunkID })
+      });
+      fetchQueue();
+    }
+
+    // Connect SSE for live logs
+    function connectSSE() {
+      const logsPanel = document.getElementById('logs-panel');
+      const es = new EventSource('/api/events');
+      es.onmessage = function(e) {
+        try {
+          const ev = JSON.parse(e.data);
+          const line = document.createElement('div');
+          line.className = 'log-line';
+          line.innerHTML = `<span class="log-time">${new Date(ev.timestamp).toLocaleTimeString()}</span><span class="log-event">[${ev.type}]</span>${ev.payload}`;
+          logsPanel.appendChild(line);
+          logsPanel.scrollTop = logsPanel.scrollHeight;
+        } catch (err) {
+          // heartbeat
+        }
+      };
+      es.onerror = function() {
+        setTimeout(connectSSE, 3000);
+      };
+    }
+
+    fetchStatus();
+    fetchQueue();
+    connectSSE();
+    setInterval(fetchStatus, 2000);
+    setInterval(fetchQueue, 4000);
+  </script>
+</body>
+</html>

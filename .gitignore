@@ -1,0 +1,27 @@
+# build output
+/shepherd
+/bin/
+/dist/
+/build/
+node_modules/
+*.exe
+*.test
+coverage/
+
+# local runtime state (never commit)
+*.db
+*.db-wal
+*.db-shm
+*.log
+.env
+.env.*
+/.shepherd-local/
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# worker handoff notes (never commit)
+/.shepherd/handoff/
