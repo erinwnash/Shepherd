@@ -678,7 +678,7 @@ usage_cap_pct = %d`, poolName, capPct))
 		if hasCLI["opencode"] || hasCLI["openai-compat"] {
 			localURL := env.OpenCode.BaseURL
 			if localURL == "" {
-				localURL = "http://127.0.0.1:8080/v1"
+				localURL = DefaultLocalEndpoint(context.Background())
 			}
 			modelLine := ""
 			if env.OpenCode.DefaultModel != "" {

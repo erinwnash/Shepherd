@@ -172,7 +172,7 @@ func detectTiersAndPools(root string) (tiersToml, poolsToml, chain string) {
 	if hasOpencode {
 		localURL := ocInfo.BaseURL
 		if localURL == "" {
-			localURL = "http://127.0.0.1:8080/v1"
+			localURL = onboard.DefaultLocalEndpoint(context.Background())
 		}
 		modelLine := ""
 		if ocInfo.DefaultModel != "" {

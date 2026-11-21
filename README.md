@@ -151,6 +151,39 @@ are passed through. Credentials for Hermes/Pi live in their normal config (`~/.h
 in those env vars. Hermes and Pi are non-interactive here, so configure their tool permissions
 beforehand; Shepherd's scope gate and rollback are what contain them.
 
+## 4b. Local models (any loader, not just llama.cpp)
+
+Shepherd talks to local models through any **OpenAI-compatible** endpoint, using the `opencode`
+adapter. That covers Ollama, LM Studio, vLLM, llama.cpp, LocalAI, LiteLLM, Jan and anything else
+that serves `/v1/chat/completions`. `shepherd init` and `shepherd onboard` probe the usual ports
+and use whichever server answers:
+
+| Server | Default URL |
+|---|---|
+| Ollama | `http://127.0.0.1:11434/v1` |
+| LM Studio | `http://127.0.0.1:1234/v1` |
+| vLLM | `http://127.0.0.1:8000/v1` |
+| llama.cpp / LocalAI | `http://127.0.0.1:8080/v1` |
+| LiteLLM | `http://127.0.0.1:4000/v1` |
+| Jan / Cortex | `http://127.0.0.1:1337/v1` |
+
+To set one by hand, or to point at a server on another machine:
+
+```toml
+[tiers.local]
+adapter = "opencode"
+model   = "qwen2.5-coder:32b"
+url     = "http://127.0.0.1:11434/v1"
+pool    = "local"
+
+[quota.pools.local]
+mode = "until-rejected"
+backoff_min = [10, 30]
+```
+
+Hermes and Pi can also use local models through their own provider config. The GPU panel in the
+dashboard (`tools/llamagputop`) is llama.cpp-specific and optional.
+
 ## 5. Driving it from your phone: ntfy
 
 Shepherd sends notifications to an ntfy topic and, while the daemon runs, listens to the same topic

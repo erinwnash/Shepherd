@@ -865,3 +865,22 @@ func DiscoverProviders(ctx context.Context, root string) []DiscoveredProvider {
 
 	return providers
 }
+
+// FirstLiveRouter returns the base URL of the first target that answers /models, or "".
+func FirstLiveRouter(ctx context.Context, targets []routerProbeTarget, timeout time.Duration) string {
+	for _, t := range targets {
+		if ok, _, _, _ := ProbeOpenAIRouterWithKey(ctx, t.BaseURL, "", timeout); ok {
+			return t.BaseURL
+		}
+	}
+	return ""
+}
+
+// DefaultLocalEndpoint finds whichever local OpenAI-compatible server is running (Ollama,
+// LM Studio, vLLM, llama.cpp, LiteLLM, ...). It falls back to :8080 only when none answers.
+func DefaultLocalEndpoint(ctx context.Context) string {
+	if u := FirstLiveRouter(ctx, StandardRouterTargets, 300*time.Millisecond); u != "" {
+		return u
+	}
+	return "http://127.0.0.1:8080/v1"
+}

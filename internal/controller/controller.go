@@ -170,7 +170,7 @@ func New(opts Options) (*Controller, error) {
 				}
 				localURL := ocInfo.BaseURL
 				if localURL == "" {
-					localURL = "http://127.0.0.1:8080/v1"
+					localURL = onboard.DefaultLocalEndpoint(context.Background())
 				}
 				opts.Config.Tiers["local"] = config.TierConfig{
 					Adapter: "opencode",
